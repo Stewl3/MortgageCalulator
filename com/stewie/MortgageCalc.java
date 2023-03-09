@@ -1,81 +1,50 @@
 package com.stewie;
 
-import java.text.NumberFormat;
-import java.util.Scanner;
-
 
 public class MortgageCalc {
-    final static byte MONTH_IN_YEARS = 12;
-    final static byte PERCENT = 100;
+    private final static byte MONTH_IN_YEARS = 12;
+    private final static byte PERCENT = 100;
 
-    public static void main(String[] args) {
-        int principle = (int)readNumber("Principle : ", 1_000, 1_000_000);
-        float annualInterest = (float)readNumber("Annual Interest Rate: ", 1, 30);
-        byte years = (byte)readNumber("Period: ", 1, 30);
+    private int principle;
+    private float annualInterest;
+    private byte years;
 
-        printMortgage(principle, annualInterest, years);
-        printPaymentSchedule(principle, annualInterest, years);
-    }
-    
-    public static double readNumber(String prompt, double min, double max) {
-        Scanner scanner = new Scanner(System.in);
-        double value;
-        while (true) {
-            System.out.print(prompt);
-            value = scanner.nextFloat();
-            if (value >= min && value <= max)
-                break;
-            System.out.println("Enter a value between " + min + " and " + max);
-        }
-        return value;
+    public MortgageCalc(int principle, float annualInterest, byte years) {
+        this.principle = principle;
+        this.annualInterest = annualInterest;
+        this.years = years;
     }
 
-    public static double calculateBalance(
-            int principle,
-            float annualInterest,
-            byte years,
-            short numberOfPaymentsMade
-    ) {
-        float monthlyInterest = annualInterest / PERCENT / MONTH_IN_YEARS;
-        short numberOfPayments = (short)(years * MONTH_IN_YEARS);
+    public double calculateBalance(short numberOfPaymentsMade) {
+        float monthlyInterest = getMonthlyInterest();
+        short numberOfPayments = getNumberOfPayments();
 
         return principle
                 * (Math.pow(1 + monthlyInterest, numberOfPayments) - Math.pow(1 + monthlyInterest, numberOfPaymentsMade))
                 / (Math.pow(1 + monthlyInterest, numberOfPayments) - 1);
     }
 
-    public static double calculateMortgage(
-            int principle,
-            float annualInterest,
-            byte years
-    ) {
-
-        float monthlyInterest = annualInterest / PERCENT / MONTH_IN_YEARS;
-        short numberOfPayments = (short)(years * MONTH_IN_YEARS);
+    public double calculateMortgage() {
+        float monthlyInterest = getMonthlyInterest();
+        short numberOfPayments = getNumberOfPayments();
 
         return principle
                 * (monthlyInterest * (Math.pow(1 + monthlyInterest, numberOfPayments)))
                 / (Math.pow(1 + monthlyInterest, numberOfPayments) - 1);
     }
 
-
-    public static void printMortgage(int principle, float annualInterest, byte years) {
-        double mortgage = calculateMortgage(principle, annualInterest, years);
-        String mortgageFormatted = NumberFormat.getCurrencyInstance().format(mortgage);
-        System.out.println();
-        System.out.println("MORTGAGE");
-        System.out.println("--------");
-        System.out.println("Monthly Payments: " + mortgageFormatted);
+    public double[] getRemainingBalances() {
+        var balances = new double[getNumberOfPayments()];
+        for (short month = 1; month <= balances.length; month++)
+            balances[month - 1] = calculateBalance(month);
+        return balances;
     }
 
-    public static void printPaymentSchedule(int principle, float annualInterest, byte years) {
-        System.out.println();
-        System.out.println("PAYMENT SCHEDULE");
-        System.out.println("----------------");
-        for (short month = 1; month <= years * MONTH_IN_YEARS; month++) {
-            double balance = calculateBalance(principle, annualInterest, years, month);
-            System.out.println(NumberFormat.getCurrencyInstance().format(balance));
-        }
+    private short getNumberOfPayments() {
+        return (short) (years * MONTH_IN_YEARS);
     }
 
+    private float getMonthlyInterest() {
+        return annualInterest / PERCENT / MONTH_IN_YEARS;
+    }
 }
