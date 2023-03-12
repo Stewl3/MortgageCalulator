@@ -5,9 +5,9 @@ public class MortgageCalc {
     private final static byte MONTH_IN_YEARS = 12;
     private final static byte PERCENT = 100;
 
-    private int principle;
-    private float annualInterest;
-    private byte years;
+    private final int principle;
+    private final float annualInterest;
+    private final byte years;
 
     public MortgageCalc(int principle, float annualInterest, byte years) {
         this.principle = principle;
